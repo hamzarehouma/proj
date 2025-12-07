@@ -12,8 +12,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <!-- ✅ CORRECTION: artifactId correct -->
-    <artifactId>soap-server</artifactId>
+    <artifactId>corba-server</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -30,19 +29,17 @@
             <version>4.11.1</version>
         </dependency>
 
-        <!-- Jakarta XML WS API -->
+        <!-- ✅ JacORB (Compatible Java 17) -->
         <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
-            <version>4.0.0</version>
+            <groupId>org.jacorb</groupId>
+            <artifactId>jacorb</artifactId>
+            <version>3.9</version>
         </dependency>
 
-        <!-- ✅ AJOUT: Implémentation Jakarta XML WS -->
         <dependency>
-            <groupId>com.sun.xml.ws</groupId>
-            <artifactId>jaxws-rt</artifactId>
-            <version>4.0.0</version>
-            <scope>runtime</scope>
+            <groupId>org.jacorb</groupId>
+            <artifactId>jacorb-services</artifactId>
+            <version>3.9</version>
         </dependency>
 
         <!-- SLF4J -->
@@ -55,6 +52,55 @@
 
     <build>
         <plugins>
+            <!-- IDL Compiler (JacORB) -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>idlj-maven-plugin</artifactId>
+                <version>1.2.2</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/idl</sourceDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/idl</outputDirectory>
+                    <sources>
+                        <source>
+                            <compatible>false</compatible>
+                            <includes>
+                                <include>*.idl</include>
+                            </includes>
+                        </source>
+                    </sources>
+                </configuration>
+            </plugin>
+
+            <!-- Build Helper -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.4.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/idl</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -62,15 +108,32 @@
                 <configuration>
                     <source>17</source>
                     <target>17</target>
+                    <encoding>ISO-8859-1</encoding>
                 </configuration>
             </plugin>
 
+            <!-- Exec -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.immobilier.soap.SoapServer</mainClass>
+                    <mainClass>com.immobilier.corba.CorbaServer</mainClass>
+                    <!-- ✅ Arguments JVM pour Java 17 -->
+                    <arguments>
+                        <argument>-ORBInitRef</argument>
+                        <argument>NameService=corbaloc::localhost:900/NameService</argument>
+                    </arguments>
+                    <systemProperties>
+                        <systemProperty>
+                            <key>org.omg.CORBA.ORBClass</key>
+                            <value>org.jacorb.orb.ORB</value>
+                        </systemProperty>
+                        <systemProperty>
+                            <key>org.omg.CORBA.ORBSingletonClass</key>
+                            <value>org.jacorb.orb.ORBSingleton</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
