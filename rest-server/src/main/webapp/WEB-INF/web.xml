@@ -2,7 +2,7 @@
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
-         https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
 
     <display-name>Système Immobilier</display-name>
@@ -11,13 +11,4 @@
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
-    <servlet>
-        <servlet-name>UtilisateurServlet</servlet-name>
-        <servlet-class>com.immobilier.rest.UtilisateurServlet</servlet-class>
-    </servlet>
-
-    <servlet-mapping>
-        <servlet-name>UtilisateurServlet</servlet-name>
-        <url-pattern>/api/utilisateurs/*</url-pattern>
-    </servlet-mapping>
 </web-app>

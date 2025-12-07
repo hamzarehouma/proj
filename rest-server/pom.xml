@@ -51,6 +51,17 @@
                     <mainClass>com.immobilier.rest.TestMongoDB</mainClass>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>11.0.15</version> <!-- ou la dernière version disponible -->
+                <configuration>
+
+                    <webApp>
+                        <contextPath>/</contextPath>
+                    </webApp>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
