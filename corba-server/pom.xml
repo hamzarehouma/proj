@@ -15,13 +15,11 @@
     <artifactId>corba-server</artifactId>
     <packaging>jar</packaging>
 
-    <!-- ⚠️ IMPORTANT: Encoding UTF-8 -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
     </properties>
 
     <dependencies>
@@ -32,31 +30,31 @@
             <version>4.11.1</version>
         </dependency>
 
-        <!-- JacORB -->
-        <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb</artifactId>
-            <version>3.9</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb-omgapi</artifactId>
-            <version>3.9</version>
-        </dependency>
-
-        <!-- Glassfish CORBA -->
+        <!-- GlassFish CORBA ORB -->
         <dependency>
             <groupId>org.glassfish.corba</groupId>
             <artifactId>glassfish-corba-orb</artifactId>
             <version>4.2.4</version>
         </dependency>
 
+        <!-- GlassFish CORBA OMG API -->
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-omgapi</artifactId>
+            <version>4.2.4</version>
+        </dependency>
+
         <!-- SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.9</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.36</version>
+            <version>2.0.9</version>
         </dependency>
 
         <!-- REST server -->
@@ -64,66 +62,50 @@
             <groupId>com.immobilier</groupId>
             <artifactId>rest-server</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Plugin IDL: Génère les classes Java depuis IDL -->
+            <!-- ✅ Générer les classes CORBA avec Ant Exec -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
-                <artifactId>idlj-maven-plugin</artifactId>
-                <version>1.2.2</version>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
+                        <id>generate-corba-sources</id>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>generate</goal>
+                            <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <executable>idlj</executable>
+                            <arguments>
+                                <argument>-fall</argument>
+                                <argument>-td</argument>
+                                <argument>${project.build.directory}/generated-sources/idl</argument>
+                                <argument>${project.basedir}/src/main/idl/BienService.idl</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- Exécution du serveur -->
+                    <execution>
+                        <id>run-server</id>
+                        <configuration>
+                            <mainClass>com.immobilier.corba.CorbaServer</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <!-- ⚠️ Chemin vers le fichier IDL -->
-                    <sourceDirectory>${project.basedir}/src/main/idl</sourceDirectory>
-
-                    <!-- ⚠️ Destination des classes générées -->
-                    <outputDirectory>${project.build.directory}/generated-sources/idl</outputDirectory>
-
-                    <!-- Options -->
-
-
-                    <!-- ⚠️ Sources générées -->
-                    <sources>
-                        <source>
-                            <compatible>true</compatible>
-                            <includes>
-                                <include>**/*.idl</include>
-                            </includes>
-                        </source>
-                    </sources>
-                </configuration>
             </plugin>
 
-            <!-- Compiler plugin avec encoding UTF-8 -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                    <encoding>UTF-8</encoding>
-                    <compilerArgs>
-                        <arg>-Xlint:deprecation</arg>
-                        <arg>-Xlint:unchecked</arg>
-                    </compilerArgs>
-                </configuration>
-            </plugin>
-
-            <!-- Build helper: Ajouter les sources générées -->
+            <!-- ✅ Ajouter les sources générées -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -140,7 +122,19 @@
                 </executions>
             </plugin>
 
-            <!-- Resources plugin avec encoding -->
+            <!-- ✅ Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- ✅ Resources -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -150,21 +144,18 @@
                 </configuration>
             </plugin>
 
-            <!-- Exec plugin -->
+            <!-- ✅ JAR -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
                 <configuration>
-                    <mainClass>com.immobilier.corba.CorbaServer</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <mainClass>com.immobilier.corba.CorbaServer</mainClass>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.immobilier.corba.CorbaServer</mainClass>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
