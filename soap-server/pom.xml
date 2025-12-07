@@ -12,84 +12,60 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>corba-server</artifactId>
+    <!-- ✅ CORRIGÉ: était corba-server, maintenant soap-server -->
+    <artifactId>soap-server</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
-        <!-- MongoDB Driver (NOUVEAU - Remplace SQL Server) -->
+        <!-- MongoDB Driver -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-sync</artifactId>
             <version>4.11.1</version>
         </dependency>
 
-        <!-- JacORB -->
+        <!-- Jakarta XML Web Services -->
         <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb</artifactId>
-            <version>3.9</version>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>4.0.0</version>
         </dependency>
 
+        <!-- JMS -->
         <dependency>
-            <groupId>org.jacorb</groupId>
-            <artifactId>jacorb-omgapi</artifactId>
-            <version>3.9</version>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>5.17.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.20.0</version>
         </dependency>
 
-        <!-- javax.rmi CORBA -->
+        <!-- Log4j Core -->
         <dependency>
-            <groupId>org.glassfish.corba</groupId>
-            <artifactId>glassfish-corba-orb</artifactId>
-            <version>4.2.4</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.20.0</version>
         </dependency>
 
-        <!-- SLF4J Implementation -->
+        <!-- Log4j API -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.36</version>
-        </dependency>
-
-        <!-- REST server -->
-        <dependency>
-            <groupId>com.immobilier</groupId>
-            <artifactId>rest-server</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.jws</groupId>
-            <artifactId>jakarta.jws-api</artifactId>
-            <version>3.0.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.xml.ws</groupId>
-            <artifactId>jakarta.xml.ws-api</artifactId>
-            <version>4.0.2</version>
-            <scope>compile</scope>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.20.0</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- IDL compiler -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>idlj-maven-plugin</artifactId>
-                <version>1.2.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sourceDirectory>${project.basedir}/src/main/idl</sourceDirectory>
-                    <outputDirectory>${project.build.directory}/generated-sources/idl</outputDirectory>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -106,7 +82,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <mainClass>com.immobilier.corba.CorbaServer</mainClass>
+                    <mainClass>com.immobilier.soap.SoapServer</mainClass>
                 </configuration>
             </plugin>
         </plugins>
