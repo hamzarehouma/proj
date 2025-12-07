@@ -20,8 +20,18 @@ public class BienServiceImpl extends BienServicePOA {
     @Override
     public int addBien(Immobilier.Bien b) {
         try {
-            // Générer un nouvel ID
-            long newId = collection.countDocuments() + 1;
+            // ✅ CORRECTION: Utiliser une méthode plus robuste pour générer l'ID
+            long newId;
+            Document lastDoc = collection.find()
+                    .sort(new Document("_id", -1))
+                    .limit(1)
+                    .first();
+
+            if (lastDoc != null) {
+                newId = lastDoc.getLong("_id") + 1;
+            } else {
+                newId = 1;
+            }
 
             Document doc = new Document()
                     .append("_id", newId)
@@ -41,7 +51,6 @@ public class BienServiceImpl extends BienServicePOA {
             return -1;
         }
     }
-
     @Override
     public Immobilier.Bien[] listBiens() {
         List<Immobilier.Bien> list = new ArrayList<>();

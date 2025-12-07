@@ -22,6 +22,11 @@ public class ContractServiceImpl implements ContractService {
     @Override
     public String createContract(int bienId, int acheteurId) {
         try {
+            // ✅ VALIDATION: Vérifier les paramètres
+            if (bienId <= 0 || acheteurId <= 0) {
+                return "❌ Erreur: ID invalide";
+            }
+
             // Vérifier si le bien existe et est disponible
             Document bien = biensCollection.find(eq("_id", (long) bienId)).first();
 
@@ -30,11 +35,32 @@ public class ContractServiceImpl implements ContractService {
             }
 
             if (!bien.getBoolean("disponible", false)) {
-                return "❌ Erreur: Bien " + bienId + " n'est plus disponible";
+                return "❌ Erreur: Bien " + bienId + " déjà vendu";
             }
 
-            // Créer le contrat
-            long newId = contratsCollection.countDocuments() + 1;
+            // ✅ VÉRIFIER: L'acheteur existe
+            MongoDatabase db = MongoDBConnection.getDatabase();
+            MongoCollection usersCol = db.getCollection("utilisateurs");
+            Document acheteur = (Document) usersCol.find(
+                    and(eq("_id", (long) acheteurId), eq("role", "acheteur"))
+            ).first();
+
+            if (acheteur == null) {
+                return "❌ Erreur: Acheteur " + acheteurId + " invalide ou non autorisé";
+            }
+
+            // Créer le contrat avec ID robuste
+            long newId;
+            Document lastContract = contratsCollection.find()
+                    .sort(new Document("_id", -1))
+                    .limit(1)
+                    .first();
+
+            if (lastContract != null) {
+                newId = lastContract.getLong("_id") + 1;
+            } else {
+                newId = 1;
+            }
 
             Document contrat = new Document()
                     .append("_id", newId)
@@ -52,17 +78,16 @@ public class ContractServiceImpl implements ContractService {
                     new Document("$set", new Document("disponible", false))
             );
 
-            String message = "✅ Contrat créé avec succès!\n" +
-                    "ID Contrat: " + newId + "\n" +
+            String message = "✅ Contrat #" + newId + " créé!\n" +
                     "Bien: " + bien.getString("titre") + "\n" +
                     "Prix: " + bien.getDouble("prix") + " €\n" +
-                    "Acheteur ID: " + acheteurId;
+                    "Acheteur: " + acheteur.getString("nom");
 
             System.out.println(message);
             return message;
 
         } catch (Exception e) {
-            String error = "❌ Erreur lors de la création du contrat: " + e.getMessage();
+            String error = "❌ Erreur: " + e.getMessage();
             System.err.println(error);
             e.printStackTrace();
             return error;

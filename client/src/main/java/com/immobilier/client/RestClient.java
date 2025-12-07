@@ -15,14 +15,14 @@ public class RestClient {
     }
 
     public Utilisateur login(String email, String password) throws Exception {
-        // Création de l'utilisateur pour login
         Utilisateur in = new Utilisateur();
         in.setEmail(email);
         in.setPassword(password);
 
         String json = gson.toJson(in);
 
-        Content c = Request.post(base + "/users/login")
+        // ✅ CORRECTION: Ajouter /api/
+        Content c = Request.post(base + "/api/users/login")
                 .bodyString(json, ContentType.APPLICATION_JSON)
                 .execute().returnContent();
 
@@ -31,7 +31,9 @@ public class RestClient {
 
     public Utilisateur register(Utilisateur u) throws Exception {
         String json = gson.toJson(u);
-        Content c = Request.post(base + "/users/register")
+
+        // ✅ CORRECTION: Ajouter /api/
+        Content c = Request.post(base + "/api/users/register")
                 .bodyString(json, ContentType.APPLICATION_JSON)
                 .execute().returnContent();
 
